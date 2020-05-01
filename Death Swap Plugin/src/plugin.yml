@@ -1,0 +1,7 @@
+name: DeathSwap
+main: com.troy.ds.DeathSwap
+version: 1.0
+api-version: 1.15
+commands:
+ deathswap:
+   description: Death swap command.

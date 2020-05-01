@@ -1,0 +1,10 @@
+**/bin/
+
+Spigot/spigot-1.15.2.jar
+Spigot/apache-maven-3.6.0
+Spigot/BuildData
+Spigot/BuildTools.log.txt
+Spigot/Bukkit
+Spigot/CraftBukkit
+Spigot/Spigot
+Spigot/work
