@@ -27,7 +27,7 @@ import org.bukkit.scheduler.BukkitTask;
 
 public class DeathSwap extends JavaPlugin implements CommandExecutor, Listener
 {
-	private int delay = 60 * 3, delayRange = (int) (60 * 1.25);
+	private int delay = 60 * 3, delayRange = (int) (60 * 1.25), countdownTime = 3;
 	private BukkitTask task;
 	private ArrayList<Player> players = new ArrayList<Player>();
 
@@ -47,7 +47,7 @@ public class DeathSwap extends JavaPlugin implements CommandExecutor, Listener
 	{
 		if (Bukkit.getOnlinePlayers().isEmpty())
 			return;
-		int chunkGenTime = 10;
+		int chunkGenTime = 20;
 		Bukkit.broadcastMessage(PLUGIN_NAME + "Starting deathswap! Allow " + chunkGenTime + " seconds for chunks to generate before starting");
 
 		Random random = new Random();
@@ -56,8 +56,7 @@ public class DeathSwap extends JavaPlugin implements CommandExecutor, Listener
 		int minDistance = 5000;
 		int maxRange = 100000;
 		boolean respectTeams = false;
-		String players = "@a"; // Here you specify a list of player names separated by spaces, or use
-								// commandblock specifiers.
+		String players = "@a";
 
 		Bukkit.getServer().getWorlds().forEach((world) -> world.setTime(0));
 
@@ -74,15 +73,15 @@ public class DeathSwap extends JavaPlugin implements CommandExecutor, Listener
 			player.getInventory().clear();
 			player.setExp(0);
 			player.setHealth(player.getAttribute(Attribute.GENERIC_MAX_HEALTH).getValue());
-			player.setSaturation(5);
-			player.setFoodLevel(10000);
+			player.setSaturation(1);
+			player.setFoodLevel(20);
 		}
 
 		Collections.shuffle(DeathSwap.this.players);
 
 		for (Player player : DeathSwap.this.players)
 		{
-			player.sendMessage(PLUGIN_NAME + "Your prey is " + getPreyAssignment(player));
+			player.sendMessage(PLUGIN_NAME + "Your prey is " + getPreyAssignment(player).getName());
 		}
 		generatingChunks = true;
 		paused = false;
@@ -108,7 +107,7 @@ public class DeathSwap extends JavaPlugin implements CommandExecutor, Listener
 							stop();
 						if (DeathSwap.this.paused)
 							return;
-						if (this.timer <= 3 && this.timer != 0)
+						if (this.timer <= countdownTime && this.timer != 0)
 							Bukkit.broadcastMessage(
 									ChatColor.RED + "" + PLUGIN_NAME + ChatColor.BOLD + "Swapping in " + this.timer + ((this.timer == 1) ? " second!" : " seconds!"));
 						if (this.timer <= 0)
@@ -216,6 +215,7 @@ public class DeathSwap extends JavaPlugin implements CommandExecutor, Listener
 						int newSwapTime = Integer.parseInt(args[1]);
 						delay = newSwapTime;
 						Bukkit.broadcastMessage(PLUGIN_NAME + sender.getName() + " set the swaptime to " + newSwapTime + " seconds");
+						return true;
 					} catch (Exception e)
 					{
 						// Ignore
@@ -227,20 +227,32 @@ public class DeathSwap extends JavaPlugin implements CommandExecutor, Listener
 						int newSwapRange = Integer.parseInt(args[1]);
 						delayRange = newSwapRange;
 						Bukkit.broadcastMessage(PLUGIN_NAME + sender.getName() + " set the swap time range to +- " + newSwapRange + " seconds");
+						return true;
+					} catch (Exception e)
+					{
+						// Ignore
+					}
+				}else if (args[0].equalsIgnoreCase("countdown"))
+				{
+					try
+					{
+						int newCountdown = Integer.parseInt(args[1]);
+						countdownTime = newCountdown;
+						Bukkit.broadcastMessage(PLUGIN_NAME + sender.getName() + " set the countdown time to +- " + newCountdown + " seconds");
+						return true;
 					} catch (Exception e)
 					{
 						// Ignore
 					}
 				}
-			} else if (args.length == 3)
-			{
 			}
 			sender.sendMessage(ChatColor.RED + PLUGIN_NAME + "Invalid usage. Please use:");
 			sender.sendMessage(ChatColor.RED + PLUGIN_NAME + "/deathswap remove <player>");
 			sender.sendMessage(ChatColor.RED + PLUGIN_NAME + "/deathswap start");
+			sender.sendMessage(ChatColor.RED + PLUGIN_NAME + "/deathswap stop");
 			sender.sendMessage(ChatColor.RED + PLUGIN_NAME + "/deathswap swaptime <swaptime (seconds)>");
 			sender.sendMessage(ChatColor.RED + PLUGIN_NAME + "/deathswap swaprange <swaprange (seconds)>");
-			sender.sendMessage(ChatColor.RED + PLUGIN_NAME + "/deathswap stop");
+			sender.sendMessage(ChatColor.RED + PLUGIN_NAME + "/deathswap countdown <countdown (seconds)>");
 			return false;
 		}
 		return false;
@@ -277,7 +289,7 @@ public class DeathSwap extends JavaPlugin implements CommandExecutor, Listener
 			removePlayer(player);
 			if (!players.isEmpty())
 			{
-				killer.sendMessage(PLUGIN_NAME + "Your new prey is " + getPreyAssignment(killer));
+				killer.sendMessage(PLUGIN_NAME + "Your new prey is " + getPreyAssignment(killer).getName());
 			}
 			player.setGameMode(GameMode.SPECTATOR);
 		} catch (Exception e)
